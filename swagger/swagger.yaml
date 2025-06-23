@@ -1,0 +1,644 @@
+openapi: 3.0.0
+info:
+  title: Huynh Land Firebase API
+  version: 1.0.0
+paths:
+  /api/history:
+    get:
+      tags: [History]
+      summary: Hiển thị lịch sử hình thành theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Lấy lịch sử thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: object
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có lịch sử
+    post:
+      tags: [History]
+      summary: Tạo lịch sử hình thành theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "201":
+          description: Lịch sử đã được tạo
+        "400":
+          description: Lịch sử đã tồn tại hoặc ngôn ngữ không hợp lệ
+    put:
+      tags: [History]
+      summary: Sửa lịch sử hình thành theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "200":
+          description: Lịch sử đã được cập nhật
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có lịch sử để cập nhật
+    delete:
+      tags: [History]
+      summary: Xóa lịch sử hình thành theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Lịch sử đã được xóa
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có lịch sử để xóa
+  /api/mission:
+    get:
+      tags: [Mission]
+      summary: Hiển thị sứ mệnh theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Lấy sứ mệnh thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mission:
+                    type: object
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có sứ mệnh
+    post:
+      tags: [Mission]
+      summary: Tạo sứ mệnh theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "201":
+          description: Sứ mệnh đã được tạo
+        "400":
+          description: Sứ mệnh đã tồn tại hoặc ngôn ngữ không hợp lệ
+    put:
+      tags: [Mission]
+      summary: Sửa sứ mệnh theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "200":
+          description: Sứ mệnh đã được cập nhật
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có sứ mệnh để cập nhật
+    delete:
+      tags: [Mission]
+      summary: Xóa sứ mệnh theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Sứ mệnh đã được xóa
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có sứ mệnh để xóa
+  /api/vision:
+    get:
+      tags: [Vision]
+      summary: Hiển thị tầm nhìn theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Lấy tầm nhìn thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vision:
+                    type: object
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có tầm nhìn
+    post:
+      tags: [Vision]
+      summary: Tạo tầm nhìn theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "201":
+          description: Tầm nhìn đã được tạo
+        "400":
+          description: Tầm nhìn đã tồn tại hoặc ngôn ngữ không hợp lệ
+    put:
+      tags: [Vision]
+      summary: Sửa tầm nhìn theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "200":
+          description: Tầm nhìn đã được cập nhật
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có tầm nhìn để cập nhật
+    delete:
+      tags: [Vision]
+      summary: Xóa tầm nhìn theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Tầm nhìn đã được xóa
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có tầm nhìn để xóa
+  /api/contact:
+    get:
+      tags: [Contact]
+      summary: Lấy thông tin liên hệ
+      responses:
+        "200":
+          description: Lấy thông tin liên hệ thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contact:
+                    type: object
+                    properties:
+                      hotline:
+                        type: string
+                      email:
+                        type: string
+                      workingHours:
+                        type: string
+        "404":
+          description: Không có thông tin liên hệ
+    post:
+      tags: [Contact]
+      summary: Tạo thông tin liên hệ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hotline:
+                  type: string
+                email:
+                  type: string
+                workingHours:
+                  type: string
+      responses:
+        "201":
+          description: Đã tạo thông tin liên hệ
+        "400":
+          description: Thông tin liên hệ đã tồn tại hoặc thiếu trường
+    put:
+      tags: [Contact]
+      summary: Sửa thông tin liên hệ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hotline:
+                  type: string
+                email:
+                  type: string
+                workingHours:
+                  type: string
+      responses:
+        "200":
+          description: Đã cập nhật thông tin liên hệ
+        "404":
+          description: Không có thông tin liên hệ để cập nhật
+    delete:
+      tags: [Contact]
+      summary: Xóa thông tin liên hệ
+      responses:
+        "200":
+          description: Đã xóa thông tin liên hệ
+        "404":
+          description: Không có thông tin liên hệ để xóa
+  /api/office:
+    get:
+      tags: [Office]
+      summary: Hiển thị địa chỉ văn phòng theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Lấy địa chỉ văn phòng thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  office:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      address:
+                        type: string
+                      phone:
+                        type: string
+                      gmail:
+                        type: string
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có địa chỉ văn phòng
+    post:
+      tags: [Office]
+      summary: Tạo địa chỉ văn phòng theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                phone:
+                  type: string
+                gmail:
+                  type: string
+      responses:
+        "201":
+          description: Đã tạo địa chỉ văn phòng
+        "400":
+          description: Địa chỉ văn phòng đã tồn tại hoặc thiếu trường
+    put:
+      tags: [Office]
+      summary: Sửa địa chỉ văn phòng theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                phone:
+                  type: string
+                gmail:
+                  type: string
+      responses:
+        "200":
+          description: Đã cập nhật địa chỉ văn phòng
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có địa chỉ văn phòng để cập nhật
+    delete:
+      tags: [Office]
+      summary: Xóa địa chỉ văn phòng theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Đã xóa địa chỉ văn phòng
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có địa chỉ văn phòng để xóa
+  /api/social:
+    get:
+      tags: [Social]
+      summary: Lấy thông tin kết nối với chúng tôi
+      responses:
+        "200":
+          description: Lấy thông tin social thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  social:
+                    type: object
+                    properties:
+                      facebook:
+                        type: string
+                      youtube:
+                        type: string
+        "404":
+          description: Không có thông tin social
+    post:
+      tags: [Social]
+      summary: Tạo thông tin kết nối với chúng tôi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                facebook:
+                  type: string
+                youtube:
+                  type: string
+      responses:
+        "201":
+          description: Đã tạo thông tin social
+        "400":
+          description: Thông tin social đã tồn tại hoặc thiếu trường
+    put:
+      tags: [Social]
+      summary: Sửa thông tin kết nối với chúng tôi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                facebook:
+                  type: string
+                youtube:
+                  type: string
+      responses:
+        "200":
+          description: Đã cập nhật thông tin social
+        "404":
+          description: Không có thông tin social để cập nhật
+    delete:
+      tags: [Social]
+      summary: Xóa thông tin kết nối với chúng tôi
+      responses:
+        "200":
+          description: Đã xóa thông tin social
+        "404":
+          description: Không có thông tin social để xóa
+  /api/mainoffice-map:
+    get:
+      tags: [MainOfficeMap]
+      summary: Lấy thông tin bản đồ văn phòng chính
+      responses:
+        "200":
+          description: Lấy thông tin bản đồ văn phòng chính thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mainOfficeMap:
+                    type: object
+                    properties:
+                      address:
+                        type: string
+                      iframe:
+                        type: string
+        "404":
+          description: Không có thông tin bản đồ văn phòng chính
+    post:
+      tags: [MainOfficeMap]
+      summary: Tạo thông tin bản đồ văn phòng chính
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                iframe:
+                  type: string
+      responses:
+        "201":
+          description: Đã tạo thông tin bản đồ văn phòng chính
+        "400":
+          description: Đã tồn tại hoặc thiếu trường
+    put:
+      tags: [MainOfficeMap]
+      summary: Sửa thông tin bản đồ văn phòng chính
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                iframe:
+                  type: string
+      responses:
+        "200":
+          description: Đã cập nhật thông tin bản đồ văn phòng chính
+        "404":
+          description: Không có thông tin để cập nhật
+    delete:
+      tags: [MainOfficeMap]
+      summary: Xóa thông tin bản đồ văn phòng chính
+      responses:
+        "200":
+          description: Đã xóa thông tin bản đồ văn phòng chính
+        "404":
+          description: Không có thông tin để xóa
+tags:
+  - name: History
+    description: API cho lịch sử hình thành
+  - name: Mission
+    description: API cho sứ mệnh
+  - name: Vision
+    description: API cho tầm nhìn
+  - name: Contact
+    description: API cho thông tin liên hệ
+  - name: Office
+    description: API cho địa chỉ văn phòng
+  - name: Social
+    description: API cho kết nối với chúng tôi (facebook, youtube)
+  - name: MainOfficeMap
+    description: API cho bản đồ văn phòng chính
