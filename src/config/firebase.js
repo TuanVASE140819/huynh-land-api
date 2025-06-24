@@ -1,21 +1,34 @@
 const admin = require("firebase-admin");
+const fs = require("fs");
+const path = require("path");
 
 let serviceAccount;
+let useEnv = false;
+
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   try {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const envValue = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+    if (envValue.startsWith("{")) {
+      serviceAccount = JSON.parse(envValue);
+      useEnv = true;
+    }
   } catch (err) {
     console.error("FIREBASE_SERVICE_ACCOUNT parse error:", err);
-    throw err;
+    // Không throw ở đây, sẽ fallback sang file local
   }
-} else {
-  throw new Error("FIREBASE_SERVICE_ACCOUNT env variable is not set");
 }
 
-console.log(
-  "FIREBASE_SERVICE_ACCOUNT env exists:",
-  !!process.env.FIREBASE_SERVICE_ACCOUNT
-);
+if (!useEnv) {
+  // Đọc file JSON local khi không có hoặc không hợp lệ biến môi trường
+  const serviceAccountPath = path.resolve(
+    __dirname,
+    "../../huynh-lands-firebase-adminsdk-fbsvc-ae2a6b5dbb.json"
+  );
+  if (!fs.existsSync(serviceAccountPath)) {
+    throw new Error("Service account file not found: " + serviceAccountPath);
+  }
+  serviceAccount = require(serviceAccountPath);
+}
 
 if (!admin.apps.length) {
   try {
