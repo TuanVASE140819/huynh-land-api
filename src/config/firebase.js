@@ -12,6 +12,11 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   throw new Error("FIREBASE_SERVICE_ACCOUNT env variable is not set");
 }
 
+console.log(
+  "FIREBASE_SERVICE_ACCOUNT env exists:",
+  !!process.env.FIREBASE_SERVICE_ACCOUNT
+);
+
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
