@@ -8,8 +8,11 @@ const contactRoutes = require("./routes/contact.routes");
 const officeRoutes = require("./routes/office.routes");
 const socialRoutes = require("./routes/social.routes");
 const mainOfficeMapRoutes = require("./routes/mainoffice-map.routes");
+const settingsRoutes = require("./routes/settings.routes");
+const inforRoutes = require("./routes/infor.routes");
 const logger = require("./utils/logger");
 const admin = require("./config/firebase"); // Sử dụng config chuẩn
+const propertyRoutes = require("./routes/property.routes");
 
 const app = express();
 
@@ -24,6 +27,9 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/office", officeRoutes);
 app.use("/api/social", socialRoutes);
 app.use("/api/mainoffice-map", mainOfficeMapRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use("/api/infor", inforRoutes);
+app.use("/api/property", propertyRoutes);
 
 // Chỉ load Swagger khi file tồn tại
 const fs = require("fs");

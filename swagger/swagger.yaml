@@ -627,6 +627,414 @@ paths:
           description: Đã xóa thông tin bản đồ văn phòng chính
         "404":
           description: Không có thông tin để xóa
+  /api/settings:
+    get:
+      tags: [Settings]
+      summary: Lấy cấu hình hệ thống
+      responses:
+        "200":
+          description: Trả về cấu hình hệ thống
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    $ref: "#/components/schemas/Settings"
+        "404":
+          description: Không tìm thấy cấu hình
+    post:
+      tags: [Settings]
+      summary: Tạo mới cấu hình hệ thống
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Settings"
+      responses:
+        "201":
+          description: Tạo mới cấu hình thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  settings:
+                    $ref: "#/components/schemas/Settings"
+        "400":
+          description: Thiếu trường bắt buộc hoặc cấu hình đã tồn tại
+    put:
+      tags: [Settings]
+      summary: Cập nhật cấu hình hệ thống
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Settings"
+      responses:
+        "200":
+          description: Cập nhật cấu hình thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  settings:
+                    $ref: "#/components/schemas/Settings"
+        "400":
+          description: Thiếu trường cập nhật
+        "404":
+          description: Không tìm thấy cấu hình để cập nhật
+    delete:
+      tags: [Settings]
+      summary: Xóa cấu hình hệ thống
+      responses:
+        "200":
+          description: Đã xóa cấu hình
+        "404":
+          description: Không có cấu hình để xóa
+  /api/infor:
+    get:
+      tags: [Infor]
+      summary: Lấy thông tin trang home theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  infor:
+                    $ref: "#/components/schemas/Infor"
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có thông tin
+    post:
+      tags: [Infor]
+      summary: Tạo thông tin trang home theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Infor"
+      responses:
+        "201":
+          description: Đã tạo thông tin
+        "400":
+          description: Đã tồn tại hoặc thiếu trường hoặc ngôn ngữ không hợp lệ
+    put:
+      tags: [Infor]
+      summary: Sửa thông tin trang home theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Infor"
+      responses:
+        "200":
+          description: Đã cập nhật thông tin
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có thông tin để cập nhật
+    delete:
+      tags: [Infor]
+      summary: Xóa thông tin trang home theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Đã xóa thông tin
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không có thông tin để xóa
+  /api/property:
+    get:
+      tags: [Property]
+      summary: Lấy danh sách bất động sản theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      responses:
+        "200":
+          description: Lấy danh sách thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  properties:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Property"
+        "400":
+          description: Ngôn ngữ không hợp lệ
+    post:
+      tags: [Property]
+      summary: Tạo mới bất động sản theo ngôn ngữ
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Ngôn ngữ (vi, en, ko)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Property"
+      responses:
+        "201":
+          description: Đã tạo bất động sản
+        "400":
+          description: Đã tồn tại hoặc thiếu trường hoặc ngôn ngữ không hợp lệ
+  /api/property/{id}:
+    get:
+      tags: [Property]
+      summary: Lấy chi tiết bất động sản theo ngôn ngữ
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+      responses:
+        "200":
+          description: Lấy chi tiết thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  property:
+                    $ref: "#/components/schemas/Property"
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không tìm thấy bất động sản
+    put:
+      tags: [Property]
+      summary: Sửa bất động sản theo ngôn ngữ
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Property"
+      responses:
+        "200":
+          description: Đã cập nhật bất động sản
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không tìm thấy bất động sản
+    delete:
+      tags: [Property]
+      summary: Xóa bất động sản theo ngôn ngữ
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [vi, en, ko]
+      responses:
+        "200":
+          description: Đã xóa bất động sản
+        "400":
+          description: Ngôn ngữ không hợp lệ
+        "404":
+          description: Không tìm thấy bất động sản
+components:
+  schemas:
+    History:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    Mission:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    Vision:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    Contact:
+      type: object
+      properties:
+        hotline:
+          type: string
+        email:
+          type: string
+        workingHours:
+          type: string
+    Office:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        gmail:
+          type: string
+    Social:
+      type: object
+      properties:
+        facebook:
+          type: string
+        youtube:
+          type: string
+    MainOfficeMap:
+      type: object
+      properties:
+        address:
+          type: string
+        iframe:
+          type: string
+    Settings:
+      type: object
+      properties:
+        color:
+          type: string
+        companyName:
+          type: string
+        slogan:
+          type: string
+        hashtag:
+          type: string
+    Infor:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    Property:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        code:
+          type: string
+        hashtags:
+          type: array
+          items:
+            type: string
+        price:
+          type: number
+        area:
+          type: number
+        landArea:
+          type: number
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        description:
+          type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        extras:
+          type: array
+          items:
+            type: string
+        mapLocation:
+          type: object
+          properties:
+            lat:
+              type: number
+            lng:
+              type: number
+        lang:
+          type: string
+          enum: [vi, en, ko]
 tags:
   - name: History
     description: API cho lịch sử hình thành
@@ -642,3 +1050,9 @@ tags:
     description: API cho kết nối với chúng tôi (facebook, youtube)
   - name: MainOfficeMap
     description: API cho bản đồ văn phòng chính
+  - name: Settings
+    description: API quản lý cấu hình hệ thống
+  - name: Infor
+    description: API cho thông tin trang home (đa ngôn ngữ)
+  - name: Property
+    description: API cho bất động sản đa ngôn ngữ
