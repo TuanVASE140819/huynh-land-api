@@ -14,6 +14,7 @@ const inforRoutes = require("./routes/infor.routes");
 const logger = require("./utils/logger");
 const admin = require("./config/firebase"); // Sử dụng config chuẩn
 const propertyRoutes = require("./routes/property.routes");
+const propertyTypeRoutes = require("./routes/propertyType.routes");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/mainoffice-map", mainOfficeMapRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/infor", inforRoutes);
 app.use("/api/property", propertyRoutes);
+app.use("/api/property-type", propertyTypeRoutes);
 
 // Chỉ load Swagger khi file tồn tại
 const fs = require("fs");
@@ -42,7 +44,11 @@ if (fs.existsSync("./swagger/swagger.yaml")) {
 }
 
 app.get("/", (req, res) => {
-  res.send("Huynh Land Firebase API");
+  res.send({
+    vi: "Huynh Land Firebase API",
+    en: "Huynh Land Firebase API",
+    ko: "Huynh Land Firebase API",
+  });
 });
 
 module.exports = app;

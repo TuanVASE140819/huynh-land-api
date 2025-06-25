@@ -917,6 +917,97 @@ paths:
           description: Ngôn ngữ không hợp lệ
         "404":
           description: Không tìm thấy bất động sản
+  /api/property-type:
+    get:
+      tags: [PropertyType]
+      summary: Lấy danh sách loại bất động sản
+      responses:
+        "200":
+          description: Danh sách loại bất động sản
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  propertyTypes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PropertyType"
+    post:
+      tags: [PropertyType]
+      summary: Thêm loại bất động sản (đa ngôn ngữ)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyType"
+      responses:
+        "201":
+          description: Đã tạo loại bất động sản
+        "400":
+          description: Thiếu thông tin hoặc tên đã tồn tại
+  /api/property-type/{id}:
+    get:
+      tags: [PropertyType]
+      summary: Lấy chi tiết loại bất động sản
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID loại bất động sản
+      responses:
+        "200":
+          description: Chi tiết loại bất động sản
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  propertyType:
+                    $ref: "#/components/schemas/PropertyType"
+        "404":
+          description: Không tìm thấy loại bất động sản
+    put:
+      tags: [PropertyType]
+      summary: Sửa loại bất động sản (đa ngôn ngữ)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID loại bất động sản
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyType"
+      responses:
+        "200":
+          description: Đã cập nhật loại bất động sản
+        "400":
+          description: Thiếu thông tin cập nhật
+        "404":
+          description: Không tìm thấy loại bất động sản
+    delete:
+      tags: [PropertyType]
+      summary: Xóa loại bất động sản
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID loại bất động sản
+      responses:
+        "200":
+          description: Đã xóa loại bất động sản
+        "404":
+          description: Không tìm thấy loại bất động sản
 components:
   schemas:
     History:
@@ -1035,6 +1126,32 @@ components:
         lang:
           type: string
           enum: [vi, en, ko]
+    PropertyType:
+      type: object
+      properties:
+        vi:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+        en:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+        ko:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+        status:
+          type: boolean
 tags:
   - name: History
     description: API cho lịch sử hình thành
@@ -1056,3 +1173,22 @@ tags:
     description: API cho thông tin trang home (đa ngôn ngữ)
   - name: Property
     description: API cho bất động sản đa ngôn ngữ
+  - name: PropertyType
+    description: API quản lý loại bất động sản
+    description: API cho địa chỉ văn phòng
+  - name: Social
+    description: API cho kết nối với chúng tôi (facebook, youtube)
+  - name: MainOfficeMap
+    description: API cho bản đồ văn phòng chính
+  - name: Settings
+    description: API quản lý cấu hình hệ thống
+  - name: Infor
+    description: API cho thông tin trang home (đa ngôn ngữ)
+  - name: Property
+    description: API cho bất động sản đa ngôn ngữ
+  - name: PropertyType
+    description: API quản lý loại bất động sản
+  - name: Property
+    description: API cho bất động sản đa ngôn ngữ
+  - name: PropertyType
+    description: API quản lý loại bất động sản

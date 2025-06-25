@@ -11,6 +11,8 @@ function getLang(req) {
   return lang;
 }
 
+// ===== HISTORY APIs =====
+
 // Thêm lịch sử (POST /api/history?lang=vi)
 router.post("/", async (req, res) => {
   try {
@@ -91,6 +93,132 @@ router.get("/", async (req, res) => {
         .status(404)
         .json({ message: "No history found for this language." });
     res.json({ history: doc.data() });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+module.exports = router;
+// ===== PROPERTY TYPE APIs =====
+
+// Thêm loại bất động sản (POST /api/property-type)
+router.post("/property-type", async (req, res) => {
+  try {
+    const { name, description, status } = req.body;
+    if (!name || !description || typeof status === "undefined") {
+      return res
+        .status(400)
+        .json({ message: "Missing name, description, or status." });
+    }
+    // Tên loại duy nhất
+    const query = await admin
+      .firestore()
+      .collection(PROPERTY_TYPE_COLLECTION)
+      .where("name", "==", name)
+      .get();
+    if (!query.empty) {
+      return res
+        .status(400)
+        .json({ message: "Property type with this name already exists." });
+    }
+    const docRef = await admin
+      .firestore()
+      .collection(PROPERTY_TYPE_COLLECTION)
+      .add({
+        name,
+        description,
+        status,
+      });
+    res.status(201).json({
+      message: "Property type created.",
+      id: docRef.id,
+      propertyType: { name, description, status },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Sửa loại bất động sản (PUT /api/property-type/:id)
+router.put("/property-type/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, status } = req.body;
+    if (!name && !description && typeof status === "undefined") {
+      return res.status(400).json({ message: "Missing fields to update." });
+    }
+    const docRef = admin
+      .firestore()
+      .collection(PROPERTY_TYPE_COLLECTION)
+      .doc(id);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Property type not found." });
+    }
+    await docRef.update({
+      ...(name && { name }),
+      ...(description && { description }),
+      ...(typeof status !== "undefined" && { status }),
+    });
+    const updated = await docRef.get();
+    res.json({
+      message: "Property type updated.",
+      propertyType: updated.data(),
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Xóa loại bất động sản (DELETE /api/property-type/:id)
+router.delete("/property-type/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const docRef = admin
+      .firestore()
+      .collection(PROPERTY_TYPE_COLLECTION)
+      .doc(id);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Property type not found." });
+    }
+    await docRef.delete();
+    res.json({ message: "Property type deleted." });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Lấy danh sách loại bất động sản (GET /api/property-type)
+router.get("/property-type", async (req, res) => {
+  try {
+    const snapshot = await admin
+      .firestore()
+      .collection(PROPERTY_TYPE_COLLECTION)
+      .get();
+    const propertyTypes = [];
+    snapshot.forEach((doc) => {
+      propertyTypes.push({ id: doc.id, ...doc.data() });
+    });
+    res.json({ propertyTypes });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Lấy chi tiết loại bất động sản (GET /api/property-type/:id)
+router.get("/property-type/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doc = await admin
+      .firestore()
+      .collection(PROPERTY_TYPE_COLLECTION)
+      .doc(id)
+      .get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Property type not found." });
+    }
+    res.json({ propertyType: { id: doc.id, ...doc.data() } });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
