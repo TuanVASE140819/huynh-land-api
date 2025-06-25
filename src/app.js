@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const userRoutes = require("./routes/user.routes"); // Đảm bảo file này tồn tại: src/routes/user.routes.js
 const historyRoutes = require("./routes/history.routes");
@@ -16,6 +17,7 @@ const propertyRoutes = require("./routes/property.routes");
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(logger);
 
