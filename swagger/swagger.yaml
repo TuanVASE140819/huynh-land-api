@@ -792,15 +792,44 @@ paths:
   /api/property:
     get:
       tags: [Property]
-      summary: Lấy danh sách bất động sản theo ngôn ngữ
+      summary: Lấy danh sách bất động sản (đa ngôn ngữ)
       parameters:
         - in: query
-          name: lang
-          required: true
+          name: propertyType
+          required: false
           schema:
             type: string
-            enum: [vi, en, ko]
-          description: Ngôn ngữ (vi, en, ko)
+          description: Lọc theo loại bất động sản (propertyType)
+        - in: query
+          name: businessType
+          required: false
+          schema:
+            type: string
+          description: Lọc theo hoạt động bất động sản (businessType)
+        - in: query
+          name: address
+          required: false
+          schema:
+            type: string
+          description: Lọc theo địa chỉ (tìm kiếm chuỗi, đa ngôn ngữ)
+        - in: query
+          name: priceFrom
+          required: false
+          schema:
+            type: number
+          description: Giá từ (>=, lọc theo trường price tiếng Việt)
+        - in: query
+          name: priceTo
+          required: false
+          schema:
+            type: number
+          description: Giá đến (<=, lọc theo trường price tiếng Việt)
+        - in: query
+          name: keyword
+          required: false
+          schema:
+            type: string
+          description: Tìm kiếm theo tên hoặc mô tả (đa ngôn ngữ)
       responses:
         "200":
           description: Lấy danh sách thành công
@@ -812,47 +841,31 @@ paths:
                   properties:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Property"
-        "400":
-          description: Ngôn ngữ không hợp lệ
+                      $ref: "#/components/schemas/PropertyMultiLang"
     post:
       tags: [Property]
-      summary: Tạo mới bất động sản theo ngôn ngữ
-      parameters:
-        - in: query
-          name: lang
-          required: true
-          schema:
-            type: string
-            enum: [vi, en, ko]
-          description: Ngôn ngữ (vi, en, ko)
+      summary: Tạo mới bất động sản (đa ngôn ngữ)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Property"
+              $ref: "#/components/schemas/PropertyMultiLang"
       responses:
         "201":
           description: Đã tạo bất động sản
         "400":
-          description: Đã tồn tại hoặc thiếu trường hoặc ngôn ngữ không hợp lệ
+          description: Đã tồn tại hoặc thiếu trường
   /api/property/{id}:
     get:
       tags: [Property]
-      summary: Lấy chi tiết bất động sản theo ngôn ngữ
+      summary: Lấy chi tiết bất động sản (đa ngôn ngữ)
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-        - in: query
-          name: lang
-          required: true
-          schema:
-            type: string
-            enum: [vi, en, ko]
       responses:
         "200":
           description: Lấy chi tiết thành công
@@ -862,59 +875,43 @@ paths:
                 type: object
                 properties:
                   property:
-                    $ref: "#/components/schemas/Property"
-        "400":
-          description: Ngôn ngữ không hợp lệ
+                    $ref: "#/components/schemas/PropertyMultiLang"
         "404":
           description: Không tìm thấy bất động sản
     put:
       tags: [Property]
-      summary: Sửa bất động sản theo ngôn ngữ
+      summary: Sửa bất động sản (đa ngôn ngữ)
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-        - in: query
-          name: lang
-          required: true
-          schema:
-            type: string
-            enum: [vi, en, ko]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Property"
+              $ref: "#/components/schemas/PropertyMultiLang"
       responses:
         "200":
           description: Đã cập nhật bất động sản
         "400":
-          description: Ngôn ngữ không hợp lệ
+          description: Thiếu trường cập nhật
         "404":
           description: Không tìm thấy bất động sản
     delete:
       tags: [Property]
-      summary: Xóa bất động sản theo ngôn ngữ
+      summary: Xóa bất động sản
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-        - in: query
-          name: lang
-          required: true
-          schema:
-            type: string
-            enum: [vi, en, ko]
       responses:
         "200":
           description: Đã xóa bất động sản
-        "400":
-          description: Ngôn ngữ không hợp lệ
         "404":
           description: Không tìm thấy bất động sản
   /api/property-type:
@@ -1152,6 +1149,157 @@ components:
               type: string
         status:
           type: boolean
+    PropertyMultiLang:
+      type: object
+      properties:
+        vi:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+            code:
+              type: string
+            hashtags:
+              type: array
+              items:
+                type: string
+            price:
+              type: number
+            area:
+              type: number
+            landArea:
+              type: number
+            bedrooms:
+              type: integer
+            bathrooms:
+              type: integer
+            floors:
+              type: integer
+              description: Số tầng
+            direction:
+              type: string
+              description: Hướng
+            description:
+              type: string
+            highlights:
+              type: array
+              items:
+                type: string
+            extras:
+              type: array
+              items:
+                type: string
+            mapLocation:
+              type: object
+              properties:
+                lat:
+                  type: number
+                lng:
+                  type: number
+        en:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+            code:
+              type: string
+            hashtags:
+              type: array
+              items:
+                type: string
+            price:
+              type: number
+            area:
+              type: number
+            landArea:
+              type: number
+            bedrooms:
+              type: integer
+            bathrooms:
+              type: integer
+            floors:
+              type: integer
+              description: Số tầng
+            direction:
+              type: string
+              description: Hướng
+            description:
+              type: string
+            highlights:
+              type: array
+              items:
+                type: string
+            extras:
+              type: array
+              items:
+                type: string
+            mapLocation:
+              type: object
+              properties:
+                lat:
+                  type: number
+                lng:
+                  type: number
+        ko:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+            code:
+              type: string
+            hashtags:
+              type: array
+              items:
+                type: string
+            price:
+              type: number
+            area:
+              type: number
+            landArea:
+              type: number
+            bedrooms:
+              type: integer
+            bathrooms:
+              type: integer
+            floors:
+              type: integer
+              description: Số tầng
+            direction:
+              type: string
+              description: Hướng
+            description:
+              type: string
+            highlights:
+              type: array
+              items:
+                type: string
+            extras:
+              type: array
+              items:
+                type: string
+            mapLocation:
+              type: object
+              properties:
+                lat:
+                  type: number
+                lng:
+                  type: number
+        images:
+          type: array
+          items:
+            type: string
+          description: Danh sách link ảnh chung cho bất động sản
+        propertyType:
+          type: string
+        businessType:
+          type: string
+          description: Hoạt động bất động sản
 tags:
   - name: History
     description: API cho lịch sử hình thành
@@ -1182,6 +1330,16 @@ tags:
     description: API cho bản đồ văn phòng chính
   - name: Settings
     description: API quản lý cấu hình hệ thống
+  - name: Infor
+    description: API cho thông tin trang home (đa ngôn ngữ)
+  - name: Property
+    description: API cho bất động sản đa ngôn ngữ
+  - name: PropertyType
+    description: API quản lý loại bất động sản
+  - name: Property
+    description: API cho bất động sản đa ngôn ngữ
+  - name: PropertyType
+    description: API quản lý loại bất động sản
   - name: Infor
     description: API cho thông tin trang home (đa ngôn ngữ)
   - name: Property
