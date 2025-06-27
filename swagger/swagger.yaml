@@ -1005,6 +1005,36 @@ paths:
           description: Đã xóa loại bất động sản
         "404":
           description: Không tìm thấy loại bất động sản
+  /api/property/upload-image:
+    post:
+      tags: [Property]
+      summary: Upload ảnh bất động sản (lưu Dropbox)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Ảnh bất động sản
+      responses:
+        "200":
+          description: Upload thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Link ảnh Dropbox
+        "400":
+          description: Không có file upload
+        "500":
+          description: Upload thất bại
 components:
   schemas:
     History:
@@ -1294,7 +1324,7 @@ components:
           type: array
           items:
             type: string
-          description: Danh sách link ảnh chung cho bất động sản
+          description: Danh sách link ảnh (lưu trữ trên Dropbox) cho bất động sản
         propertyType:
           type: string
         businessType:

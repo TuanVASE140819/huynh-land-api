@@ -1,14 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
+const multer = require("multer");
+const { Dropbox } = require("dropbox");
+const fetch = require("node-fetch"); // Dropbox SDK cần fetch
 
 const COLLECTION = "properties";
 const LANGS = ["vi", "en", "ko"];
 
+// Dropbox config
+const DROPBOX_ACCESS_TOKEN = process.env.DROPBOX_ACCESS_TOKEN;
+const dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN, fetch });
+
+console.log("Dropbox initialized with access token:", DROPBOX_ACCESS_TOKEN);
+// Multer config (memory storage)
+const upload = multer({ storage: multer.memoryStorage() });
+
 // Lấy danh sách bất động sản (GET /api/property)
 router.get("/", async (req, res) => {
   try {
-    const { propertyType, businessType, address, priceFrom, priceTo, keyword } = req.query;
+    const { propertyType, businessType, address, priceFrom, priceTo, keyword } =
+      req.query;
     let query = admin.firestore().collection(COLLECTION);
 
     if (propertyType) {
@@ -282,6 +294,50 @@ router.delete("/:id", async (req, res) => {
     res.json({ message: "Property deleted." });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Upload image to Dropbox (POST /api/property/upload-image)
+router.post("/upload-image", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded." });
+    }
+    const dropboxPath = `/huynh-land/${Date.now()}_${req.file.originalname}`;
+    try {
+      const uploadRes = await dbx.filesUpload({
+        path: dropboxPath,
+        contents: req.file.buffer,
+        mode: "add",
+        autorename: true,
+        mute: false,
+      });
+      const shared = await dbx.sharingCreateSharedLinkWithSettings({
+        path: dropboxPath,
+        settings: { requested_visibility: "public" },
+      });
+      const url = shared.result.url.replace("?dl=0", "?raw=1");
+      res.json({ url });
+    } catch (error) {
+      console.error("Dropbox error:", error);
+      if (error.error && error.error.shared_link_already_exists) {
+        const shared = await dbx.sharingListSharedLinks({
+          path: dropboxPath,
+          direct_only: true,
+        });
+        const url = shared.result.links[0].url.replace("?dl=0", "?raw=1");
+        return res.json({ url });
+      }
+      res
+        .status(500)
+        .json({
+          message: "Upload failed",
+          error: error.message,
+          details: error,
+        });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Upload failed", error: error.message });
   }
 });
 
