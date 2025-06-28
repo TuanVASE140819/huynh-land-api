@@ -297,12 +297,39 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// Hàm lấy access_token mới từ refresh_token
+async function getDropboxAccessToken() {
+  const params = new URLSearchParams();
+  params.append("grant_type", "refresh_token");
+  params.append("refresh_token", process.env.DROPBOX_REFRESH_TOKEN); // refresh_token bạn lấy được
+  params.append(
+    "client_id",
+    process.env.DROPBOX_CLIENT_ID || "o4tp0epqnimyc0i"
+  );
+  params.append(
+    "client_secret",
+    process.env.DROPBOX_CLIENT_SECRET || "xzdlw5mzulj2qib"
+  );
+
+  const response = await fetch("https://api.dropbox.com/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params,
+  });
+  const data = await response.json();
+  console.log("Dropbox token response:", data); // Thêm log chi tiết
+  return data.access_token;
+}
+
 // Upload image to Dropbox (POST /api/property/upload-image)
 router.post("/upload-image", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded." });
     }
+    const accessToken = await getDropboxAccessToken();
+    console.log("Access token:", accessToken);
+    const dbx = new Dropbox({ accessToken, fetch });
     const dropboxPath = `/huynh-land/${Date.now()}_${req.file.originalname}`;
     try {
       const uploadRes = await dbx.filesUpload({
@@ -328,13 +355,11 @@ router.post("/upload-image", upload.single("image"), async (req, res) => {
         const url = shared.result.links[0].url.replace("?dl=0", "?raw=1");
         return res.json({ url });
       }
-      res
-        .status(500)
-        .json({
-          message: "Upload failed",
-          error: error.message,
-          details: error,
-        });
+      res.status(500).json({
+        message: "Upload failed",
+        error: error.message,
+        details: error,
+      });
     }
   } catch (error) {
     res.status(500).json({ message: "Upload failed", error: error.message });

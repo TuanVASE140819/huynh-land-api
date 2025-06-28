@@ -15,6 +15,7 @@ const logger = require("./utils/logger");
 const admin = require("./config/firebase"); // Sử dụng config chuẩn
 const propertyRoutes = require("./routes/property.routes");
 const propertyTypeRoutes = require("./routes/propertyType.routes");
+const dropboxOAuthRoutes = require("./routes/dropbox-oauth.routes");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/infor", inforRoutes);
 app.use("/api/property", propertyRoutes);
 app.use("/api/property-type", propertyTypeRoutes);
+app.use(dropboxOAuthRoutes);
 
 // Chỉ load Swagger khi file tồn tại
 const fs = require("fs");
