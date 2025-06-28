@@ -343,7 +343,30 @@ router.post("/upload-image", upload.single("image"), async (req, res) => {
         path: dropboxPath,
         settings: { requested_visibility: "public" },
       });
-      const url = shared.result.url.replace("?dl=0", "?raw=1");
+      // Lấy link thumbnail (preview) cho ảnh Dropbox
+      const thumbnailRes = await dbx.filesGetThumbnailV2({
+        resource: {
+          ".tag": "path",
+          path: dropboxPath,
+        },
+        format: { ".tag": "png" },
+        size: { ".tag": "w640h480" },
+      });
+      let url;
+      if (thumbnailRes.result && thumbnailRes.result.thumbnail) {
+        const thumbBase64 = thumbnailRes.result.thumbnail.toString("base64");
+        url = `data:image/png;base64,${thumbBase64}`;
+      } else {
+        // Fallback: xử lý link raw Dropbox
+        url = shared.result.url;
+        if (url.includes("/scl/")) {
+          url = url
+            .replace("www.dropbox.com", "dl.dropboxusercontent.com")
+            .replace("?dl=0", "");
+        } else {
+          url = url.replace("?dl=0", "?raw=1");
+        }
+      }
       res.json({ url });
     } catch (error) {
       console.error("Dropbox error:", error);
@@ -352,8 +375,16 @@ router.post("/upload-image", upload.single("image"), async (req, res) => {
           path: dropboxPath,
           direct_only: true,
         });
-        const url = shared.result.links[0].url.replace("?dl=0", "?raw=1");
-        return res.json({ url });
+        let url = shared.result.url;
+        // Xử lý link Dropbox mới (Scoped Link) thành link raw trực tiếp
+        if (url.includes("/scl/")) {
+          url = url
+            .replace("www.dropbox.com", "dl.dropboxusercontent.com")
+            .replace("?dl=0", "");
+        } else {
+          url = url.replace("?dl=0", "?raw=1");
+        }
+        res.json({ url });
       }
       res.status(500).json({
         message: "Upload failed",
