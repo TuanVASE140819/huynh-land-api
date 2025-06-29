@@ -830,6 +830,13 @@ paths:
           schema:
             type: string
           description: Tìm kiếm theo tên hoặc mô tả (đa ngôn ngữ)
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [active, hidden]
+          description: Lọc theo trạng thái bất động sản (active/hidden)
       responses:
         "200":
           description: Lấy danh sách thành công
@@ -1035,6 +1042,84 @@ paths:
           description: Không có file upload
         "500":
           description: Upload thất bại
+  /api/property/{id}/status:
+    put:
+      tags: [Property]
+      summary: Cập nhật trạng thái ẩn/hiện bất động sản
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID bất động sản
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, hidden]
+                  description: Trạng thái mới (active: hiện, hidden: ẩn)
+      responses:
+        "200":
+          description: Đã cập nhật trạng thái bất động sản
+        "400":
+          description: Trạng thái không hợp lệ
+        "404":
+          description: Không tìm thấy bất động sản
+  /api/history/upload-image:
+    post:
+      tags: [History]
+      summary: Upload ảnh lịch sử (lưu Dropbox)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Ảnh lịch sử
+      responses:
+        "200":
+          description: Upload thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Link ảnh Dropbox
+        "400":
+          description: Không có file upload
+        "500":
+          description: Upload thất bại
+  /api/history/image:
+    get:
+      tags: [History]
+      summary: Lấy ảnh lịch sử (Dropbox)
+      responses:
+        "200":
+          description: Link ảnh lịch sử
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Link ảnh Dropbox
+        "404":
+          description: Không có ảnh lịch sử
+        "500":
+          description: Lỗi server
 components:
   schemas:
     History:
@@ -1330,6 +1415,10 @@ components:
         businessType:
           type: string
           description: Hoạt động bất động sản
+        status:
+          type: string
+          enum: [active, hidden]
+          description: Trạng thái bất động sản (active: hiện, hidden: ẩn)
 tags:
   - name: History
     description: API cho lịch sử hình thành

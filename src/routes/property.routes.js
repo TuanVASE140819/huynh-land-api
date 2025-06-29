@@ -19,8 +19,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Lấy danh sách bất động sản (GET /api/property)
 router.get("/", async (req, res) => {
   try {
-    const { propertyType, businessType, address, priceFrom, priceTo, keyword } =
-      req.query;
+    const { propertyType, businessType, address, priceFrom, priceTo, keyword, status } = req.query;
     let query = admin.firestore().collection(COLLECTION);
 
     if (propertyType) {
@@ -67,8 +66,11 @@ router.get("/", async (req, res) => {
         images: Array.isArray(data.images) ? data.images : [],
         propertyType: data.propertyType || null,
         businessType: data.businessType || null,
+        status: data.status || "active",
       });
     });
+
+    // Bỏ lọc theo status, luôn trả về tất cả property
 
     // Lọc theo address (tìm kiếm chuỗi, đa ngôn ngữ)
     if (address) {
@@ -191,7 +193,7 @@ router.post("/", async (req, res) => {
     const docRef = await admin
       .firestore()
       .collection(COLLECTION)
-      .add({ vi, en, ko, images: imagesArr, propertyType, businessType });
+      .add({ vi, en, ko, images: imagesArr, propertyType, businessType, status: "active" });
     res.status(201).json({
       message: "Property created.",
       property: {
@@ -214,6 +216,7 @@ router.post("/", async (req, res) => {
         images: imagesArr,
         propertyType,
         businessType: businessType || null,
+        status: "active",
       },
     });
   } catch (error) {
@@ -278,6 +281,23 @@ router.put("/:id", async (req, res) => {
         businessType: updated.data().businessType || null,
       },
     });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// API cập nhật trạng thái ẩn/hiện bất động sản
+router.put("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !["active", "hidden"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status. Must be 'active' or 'hidden'." });
+    }
+    const docRef = admin.firestore().collection(COLLECTION).doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists) return res.status(404).json({ message: "Property not found." });
+    await docRef.update({ status });
+    res.json({ message: `Property status updated to ${status}.` });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
