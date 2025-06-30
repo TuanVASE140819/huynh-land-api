@@ -24,8 +24,14 @@ async function getDropboxAccessToken() {
   const params = new URLSearchParams();
   params.append("grant_type", "refresh_token");
   params.append("refresh_token", process.env.DROPBOX_REFRESH_TOKEN);
-  params.append("client_id", process.env.DROPBOX_CLIENT_ID || "o4tp0epqnimyc0i");
-  params.append("client_secret", process.env.DROPBOX_CLIENT_SECRET || "xzdlw5mzulj2qib");
+  params.append(
+    "client_id",
+    process.env.DROPBOX_CLIENT_ID || "o4tp0epqnimyc0i"
+  );
+  params.append(
+    "client_secret",
+    process.env.DROPBOX_CLIENT_SECRET || "xzdlw5mzulj2qib"
+  );
   const response = await fetch("https://api.dropbox.com/oauth2/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -122,54 +128,82 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Tạo thư mục /huynh-land/history trên Dropbox nếu chưa có
+async function ensureDropboxHistoryFolder(dbx) {
+  const folderPath = "/huynh-land/history";
+  try {
+    await dbx.filesGetMetadata({ path: folderPath });
+  } catch (error) {
+    if (error.status === 409) {
+      // Folder chưa tồn tại, tạo mới
+      await dbx.filesCreateFolderV2({ path: folderPath, autorename: false });
+    } else {
+      throw error;
+    }
+  }
+}
+
 // Upload image to Dropbox (POST /api/history/upload-image)
 router.post("/upload-image", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded." });
     }
-    // Nếu dùng refresh_token thì lấy accessToken mới, còn không thì dùng sẵn
     let accessToken = DROPBOX_ACCESS_TOKEN;
     if (!accessToken) {
       accessToken = await getDropboxAccessToken();
     }
     const dbx = new Dropbox({ accessToken, fetch });
-    const dropboxPath = `/huynh-land/history/${Date.now()}_${req.file.originalname}`;
+    await ensureDropboxHistoryFolder(dbx); // Đảm bảo folder tồn tại
+    const dropboxPath = `/huynh-land/history/${Date.now()}_${
+      req.file.originalname
+    }`;
+    let url;
     try {
-      const uploadRes = await dbx.filesUpload({
+      await dbx.filesUpload({
         path: dropboxPath,
         contents: req.file.buffer,
         mode: "add",
         autorename: true,
         mute: false,
       });
+      // Tạo link chia sẻ
       const shared = await dbx.sharingCreateSharedLinkWithSettings({
         path: dropboxPath,
         settings: { requested_visibility: "public" },
       });
-      let url = shared.result.url;
-      if (url.includes("/scl/")) {
-        url = url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "");
-      } else {
-        url = url.replace("?dl=0", "?raw=1");
-      }
-      res.json({ url });
+      url = shared.result.url;
     } catch (error) {
-      if (error.error && error.error.shared_link_already_exists) {
+      // Nếu link đã tồn tại thì lấy link cũ
+      if (error?.error?.shared_link_already_exists) {
         const shared = await dbx.sharingListSharedLinks({
           path: dropboxPath,
           direct_only: true,
         });
-        let url = shared.result.url;
-        if (url.includes("/scl/")) {
-          url = url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "");
+        if (shared.result.links && shared.result.links.length > 0) {
+          url = shared.result.links[0].url;
         } else {
-          url = url.replace("?dl=0", "?raw=1");
+          return res
+            .status(500)
+            .json({ message: "No shared link found.", error });
         }
-        res.json({ url });
+      } else {
+        return res.status(500).json({
+          message: "Upload failed",
+          error: error.message,
+          details: error,
+        });
       }
-      res.status(500).json({ message: "Upload failed", error: error.message, details: error });
     }
+    // Chuyển link về direct link cho <img>
+    if (url.includes("/scl/")) {
+      url = url
+        .replace("www.dropbox.com", "dl.dropboxusercontent.com")
+        .replace(/\?dl=0$/, "");
+    } else {
+      url = url.replace("?dl=0", "?raw=1");
+    }
+    res.json({ url });
   } catch (error) {
     res.status(500).json({ message: "Upload failed", error: error.message });
   }
@@ -178,40 +212,71 @@ router.post("/upload-image", upload.single("image"), async (req, res) => {
 // Lấy ảnh lịch sử (GET /api/history/image)
 router.get("/image", async (req, res) => {
   try {
-    // Giả sử chỉ có 1 ảnh, lấy ảnh mới nhất trong thư mục Dropbox /huynh-land/history
     let accessToken = DROPBOX_ACCESS_TOKEN;
     if (!accessToken) {
       accessToken = await getDropboxAccessToken();
     }
     const dbx = new Dropbox({ accessToken, fetch });
     const folderPath = "/huynh-land/history";
-    const list = await dbx.filesListFolder({ path: folderPath, limit: 1, recursive: false });
-    if (!list.result.entries || list.result.entries.length === 0) {
+    // Lấy tất cả file trong folder
+    const list = await dbx.filesListFolder({
+      path: folderPath,
+      recursive: false,
+    });
+    const files = (list.result.entries || []).filter(
+      (e) => e[".tag"] === "file"
+    );
+    if (files.length === 0) {
       return res.status(404).json({ message: "No history image found." });
     }
-    // Lấy file mới nhất (theo server_modified)
-    const sorted = list.result.entries
-      .filter((e) => e[".tag"] === "file")
-      .sort((a, b) => new Date(b.server_modified) - new Date(a.server_modified));
-    if (sorted.length === 0) {
-      return res.status(404).json({ message: "No history image found." });
-    }
-    const file = sorted[0];
-    // Lấy link chia sẻ
-    let shared;
+    // Lấy file mới nhất
+    const file = files.sort(
+      (a, b) => new Date(b.server_modified) - new Date(a.server_modified)
+    )[0];
+    let url;
     try {
-      shared = await dbx.sharingCreateSharedLinkWithSettings({ path: file.path_display, settings: { requested_visibility: "public" } });
+      const shared = await dbx.sharingCreateSharedLinkWithSettings({
+        path: file.path_display,
+        settings: { requested_visibility: "public" },
+      });
+      url = shared.result.url;
     } catch (error) {
-      if (error.error && error.error.shared_link_already_exists) {
-        shared = await dbx.sharingListSharedLinks({ path: file.path_display, direct_only: true });
-        shared = { result: { url: shared.result.url } };
+      // Xử lý lỗi shared_link_already_exists cho mọi trường hợp trả về
+      const tag =
+        error?.error?.[".tag"] ||
+        error?.error?.error?.[".tag"] ||
+        error?.error?.error_summary;
+      if (
+        tag === "shared_link_already_exists" ||
+        (typeof tag === "string" && tag.includes("shared_link_already_exists"))
+      ) {
+        const shared = await dbx.sharingListSharedLinks({
+          path: file.path_display,
+          direct_only: true,
+        });
+        // Kiểm tra cả shared.links và shared.result.links
+        const links =
+          shared.links || (shared.result && shared.result.links) || [];
+        if (links.length > 0) {
+          url = links[0].url;
+        } else {
+          return res
+            .status(404)
+            .json({ message: "No shared link found for this file." });
+        }
       } else {
-        throw error;
+        return res.status(500).json({
+          message: "Get image link failed",
+          error: error.message,
+          details: error,
+        });
       }
     }
-    let url = shared.result.url;
+    // Chuyển link về direct link cho <img>
     if (url.includes("/scl/")) {
-      url = url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "");
+      url = url
+        .replace("www.dropbox.com", "dl.dropboxusercontent.com")
+        .replace(/\?dl=0$/, "");
     } else {
       url = url.replace("?dl=0", "?raw=1");
     }
