@@ -7,6 +7,7 @@ const fetch = require("node-fetch"); // Dropbox SDK cần fetch
 
 const COLLECTION = "properties";
 const LANGS = ["vi", "en", "ko"];
+const PROPERTY_TYPE_COLLECTION = "propertyTypes";
 
 // Dropbox config
 const DROPBOX_ACCESS_TOKEN = process.env.DROPBOX_ACCESS_TOKEN;
@@ -19,7 +20,16 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Lấy danh sách bất động sản (GET /api/property)
 router.get("/", async (req, res) => {
   try {
-    const { propertyType, businessType, address, priceFrom, priceTo, keyword, status } = req.query;
+    const {
+      propertyType,
+      businessType,
+      address,
+      priceFrom,
+      priceTo,
+      keyword,
+      status,
+      lang,
+    } = req.query;
     let query = admin.firestore().collection(COLLECTION);
 
     if (propertyType) {
@@ -28,7 +38,6 @@ router.get("/", async (req, res) => {
     if (businessType) {
       query = query.where("businessType", "==", businessType);
     }
-
     if (priceFrom && priceTo) {
       if (Number(priceFrom) > Number(priceTo)) {
         return res.json({ properties: [] });
@@ -41,6 +50,26 @@ router.get("/", async (req, res) => {
     } else if (priceTo) {
       query = query.where("vi.price", "<=", Number(priceTo));
     }
+
+    // Lấy danh sách propertyType (id, name) theo lang
+    const langKey = lang && LANGS.includes(lang) ? lang : "vi";
+    const propertyTypeSnap = await admin
+      .firestore()
+      .collection(PROPERTY_TYPE_COLLECTION)
+      .get();
+    console.log("propertyTypeSnap size:", propertyTypeSnap.size);
+    const propertyTypeMap = {};
+    propertyTypeSnap.forEach((doc) => {
+      console.log("propertyType doc", doc.id, doc.data());
+      let name = null;
+      if (doc.data()[langKey] && doc.data()[langKey].name) {
+        name = doc.data()[langKey].name;
+      } else if (doc.data().vi && doc.data().vi.name) {
+        name = doc.data().vi.name;
+      }
+      propertyTypeMap[doc.id] = name;
+    });
+    console.log("propertyTypeMap:", propertyTypeMap);
 
     const snapshot = await query.get();
     let properties = [];
@@ -96,7 +125,6 @@ router.get("/", async (req, res) => {
           (p.ko.description && p.ko.description.toLowerCase().includes(kw))
       );
     }
-
     res.json({ properties });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -190,10 +218,15 @@ router.post("/", async (req, res) => {
 
     // floors là optional, không cần ép kiểu ở đây
 
-    const docRef = await admin
-      .firestore()
-      .collection(COLLECTION)
-      .add({ vi, en, ko, images: imagesArr, propertyType, businessType, status: "active" });
+    const docRef = await admin.firestore().collection(COLLECTION).add({
+      vi,
+      en,
+      ko,
+      images: imagesArr,
+      propertyType,
+      businessType,
+      status: "active",
+    });
     res.status(201).json({
       message: "Property created.",
       property: {
@@ -291,11 +324,14 @@ router.put("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
     if (!status || !["active", "hidden"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status. Must be 'active' or 'hidden'." });
+      return res
+        .status(400)
+        .json({ message: "Invalid status. Must be 'active' or 'hidden'." });
     }
     const docRef = admin.firestore().collection(COLLECTION).doc(req.params.id);
     const doc = await docRef.get();
-    if (!doc.exists) return res.status(404).json({ message: "Property not found." });
+    if (!doc.exists)
+      return res.status(404).json({ message: "Property not found." });
     await docRef.update({ status });
     res.json({ message: `Property status updated to ${status}.` });
   } catch (error) {

@@ -377,16 +377,23 @@ router.delete("/property-type/:id", async (req, res) => {
   }
 });
 
-// Lấy danh sách loại bất động sản (GET /api/property-type)
+// Lấy danh sách loại bất động sản (GET /api/property-type?lang=vi)
 router.get("/property-type", async (req, res) => {
   try {
-    const snapshot = await admin
-      .firestore()
-      .collection(PROPERTY_TYPE_COLLECTION)
-      .get();
+    const lang = getLang(req) || "vi";
+    let query = admin.firestore().collection(PROPERTY_TYPE_COLLECTION);
+    if (lang) {
+      query = query.where("lang", "==", lang);
+    }
+    const snapshot = await query.get();
     const propertyTypes = [];
     snapshot.forEach((doc) => {
-      propertyTypes.push({ id: doc.id, ...doc.data() });
+      let name = doc.data().name;
+      // Nếu lưu đa ngôn ngữ dạng { vi: { name }, en: { name }, ... }
+      if (!name && doc.data()[lang] && doc.data()[lang].name) {
+        name = doc.data()[lang].name;
+      }
+      propertyTypes.push({ id: doc.id, name });
     });
     res.json({ propertyTypes });
   } catch (error) {

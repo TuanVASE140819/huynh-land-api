@@ -795,6 +795,13 @@ paths:
       summary: Lấy danh sách bất động sản (đa ngôn ngữ)
       parameters:
         - in: query
+          name: lang
+          required: false
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Lọc theo ngôn ngữ (vi, en, ko)
+        - in: query
           name: propertyType
           required: false
           schema:
@@ -925,6 +932,14 @@ paths:
     get:
       tags: [PropertyType]
       summary: Lấy danh sách loại bất động sản
+      parameters:
+        - in: query
+          name: lang
+          required: false
+          schema:
+            type: string
+            enum: [vi, en, ko]
+          description: Lọc theo ngôn ngữ (vi, en, ko)
       responses:
         "200":
           description: Danh sách loại bất động sản
@@ -936,7 +951,12 @@ paths:
                   propertyTypes:
                     type: array
                     items:
-                      $ref: "#/components/schemas/PropertyType"
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
     post:
       tags: [PropertyType]
       summary: Thêm loại bất động sản (đa ngôn ngữ)
