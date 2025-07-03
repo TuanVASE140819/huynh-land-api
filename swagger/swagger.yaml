@@ -1140,6 +1140,61 @@ paths:
           description: Không có ảnh lịch sử
         "500":
           description: Lỗi server
+  /api/contact-message:
+    post:
+      tags: [ContactMessage]
+      summary: Gửi tin nhắn liên hệ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Họ và tên
+                phone:
+                  type: string
+                  description: Số điện thoại
+                email:
+                  type: string
+                  description: Email
+                subject:
+                  type: string
+                  description: Chủ đề
+                message:
+                  type: string
+                  description: Nội dung
+      responses:
+        "201":
+          description: Đã gửi tin nhắn
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: string
+        "400":
+          description: Thiếu trường bắt buộc
+    get:
+      tags: [ContactMessage]
+      summary: Lấy danh sách tin nhắn liên hệ
+      responses:
+        "200":
+          description: Danh sách tin nhắn liên hệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ContactMessage"
 components:
   schemas:
     History:
@@ -1439,6 +1494,24 @@ components:
           type: string
           enum: [active, hidden]
           description: Trạng thái bất động sản (active: hiện, hidden: ẩn)
+    ContactMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
 tags:
   - name: History
     description: API cho lịch sử hình thành
