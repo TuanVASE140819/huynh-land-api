@@ -1195,6 +1195,134 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/ContactMessage"
+  /api/new:
+    get:
+      tags: [New]
+      summary: Lấy thông tin từ API mới
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This is the new API endpoint!
+  /api/news:
+    get:
+      tags: [News]
+      summary: Lấy danh sách tin tức
+      parameters:
+        - in: query
+          name: title
+          schema:
+            type: string
+          required: false
+          description: Tìm kiếm tin tức theo tiêu đề
+      responses:
+        "200":
+          description: Danh sách tin tức
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  news:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/News'
+    post:
+      tags: [News]
+      summary: Tạo tin tức mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/News'
+      responses:
+        "201":
+          description: Đã tạo tin tức
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/News'
+  /api/news/{id}:
+    get:
+      tags: [News]
+      summary: Lấy chi tiết tin tức
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Chi tiết tin tức
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/News'
+        "404":
+          description: Không tìm thấy tin tức
+    put:
+      tags: [News]
+      summary: Cập nhật tin tức
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/News'
+      responses:
+        "200":
+          description: Đã cập nhật tin tức
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/News'
+        "404":
+          description: Không tìm thấy tin tức
+    delete:
+      tags: [News]
+      summary: Xóa tin tức
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Đã xóa tin tức
+        "404":
+          description: Không tìm thấy tin tức
+  /api/news/latest:
+    get:
+      tags: [News]
+      summary: Lấy tin tức mới nhất
+      description: Lấy tin tức mới nhất dựa trên ngày tạo hoặc ngày cập nhật gần nhất
+      responses:
+        "200":
+          description: Tin tức mới nhất
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  news:
+                    $ref: '#/components/schemas/News'
+        "404":
+          description: Không tìm thấy tin tức
 components:
   schemas:
     History:
@@ -1512,6 +1640,26 @@ components:
         createdAt:
           type: string
           format: date-time
+    News:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        summary:
+          type: string
+        content:
+          type: string
+        author:
+          type: string
+        date:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+          description: Danh sách link hình ảnh của tin tức
 tags:
   - name: History
     description: API cho lịch sử hình thành

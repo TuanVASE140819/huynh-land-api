@@ -17,6 +17,8 @@ const propertyRoutes = require("./routes/property.routes");
 const propertyTypeRoutes = require("./routes/propertyType.routes");
 const dropboxOAuthRoutes = require("./routes/dropbox-oauth.routes");
 const contactMessageRoutes = require("./routes/contactMessage.routes");
+const newRoutes = require("./routes/new.routes");
+const newsRoutes = require("./routes/news.routes");
 
 const app = express();
 
@@ -38,6 +40,8 @@ app.use("/api/property", propertyRoutes);
 app.use("/api/property-type", propertyTypeRoutes);
 app.use("/api/contact-message", contactMessageRoutes);
 app.use(dropboxOAuthRoutes);
+app.use("/api/new", newRoutes); // Mount the new API route here
+app.use("/api/news", newsRoutes); // Mount the news API route here
 
 // Chỉ load Swagger khi file tồn tại
 const fs = require("fs");
