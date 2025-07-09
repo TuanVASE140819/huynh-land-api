@@ -18,7 +18,10 @@ router.get("/:id", async (req, res) => {
   try {
     const item = await NewsService.getById(req.params.id);
     if (!item) return res.status(404).json({ message: "Not found" });
-    res.json(item);
+    res.json({
+      ...item,
+      images: Array.isArray(item.images) ? item.images : [],
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -27,13 +30,14 @@ router.get("/:id", async (req, res) => {
 // POST /api/news - create news
 router.post("/", async (req, res) => {
   try {
-    const { title, summary, content, author, date } = req.body;
+    const { title, summary, content, author, date, images } = req.body;
     const newItem = await NewsService.create({
       title,
       summary,
       content,
       author,
       date,
+      images: Array.isArray(images) ? images : [],
     });
     res.status(201).json(newItem);
   } catch (err) {

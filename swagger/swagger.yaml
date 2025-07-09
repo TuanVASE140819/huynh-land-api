@@ -1258,14 +1258,18 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
+          description: ID tin tức
       responses:
         "200":
-          description: Chi tiết tin tức
+          description: Lấy chi tiết tin tức thành công
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/News'
+                type: object
+                properties:
+                  news:
+                    $ref: "#/components/schemas/News"
         "404":
           description: Không tìm thấy tin tức
     put:
@@ -1276,7 +1280,7 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -1300,7 +1304,7 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Đã xóa tin tức
