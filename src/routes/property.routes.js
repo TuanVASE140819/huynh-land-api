@@ -99,7 +99,10 @@ router.get("/", async (req, res) => {
       });
     });
 
-    // Bỏ lọc theo status, luôn trả về tất cả property
+    // Lọc theo status (active/hidden)
+    if (status) {
+      properties = properties.filter((p) => p.status === status);
+    }
 
     // Lọc theo address (tìm kiếm chuỗi, đa ngôn ngữ)
     if (address) {
@@ -174,59 +177,46 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { vi, en, ko, images, propertyType, businessType } = req.body;
-    if (
-      !vi ||
-      !en ||
-      !ko ||
-      !propertyType ||
-      !vi.name ||
-      !vi.address ||
-      !vi.code ||
-      !vi.price ||
-      !vi.area ||
-      !vi.landArea ||
-      !en.name ||
-      !en.address ||
-      !en.code ||
-      !en.price ||
-      !en.area ||
-      !en.landArea ||
-      !ko.name ||
-      !ko.address ||
-      !ko.code ||
-      !ko.price ||
-      !ko.area ||
-      !ko.landArea
-    ) {
-      return res.status(400).json({
-        message:
-          "Missing required fields in one of the languages or propertyType.",
+    // Xử lý propertyType truyền theo tên
+    let propertyTypeId = propertyType;
+    if (propertyType && typeof propertyType === 'string') {
+      // Tìm id theo tên trong collection property_types (không phân biệt hoa thường, loại bỏ khoảng trắng thừa)
+      const propertyTypeSnap = await admin.firestore().collection('property_types').get();
+      let found = false;
+      const typeName = propertyType.trim().toLowerCase();
+      propertyTypeSnap.forEach((doc) => {
+        const data = doc.data();
+        if (
+          (data.vi && data.vi.name && data.vi.name.trim().toLowerCase() === typeName) ||
+          (data.en && data.en.name && data.en.name.trim().toLowerCase() === typeName) ||
+          (data.ko && data.ko.name && data.ko.name.trim().toLowerCase() === typeName)
+        ) {
+          propertyTypeId = doc.id;
+          found = true;
+        }
       });
+      if (!found) {
+        return res.status(400).json({ message: 'Không tìm thấy loại bất động sản phù hợp.' });
+      }
     }
-
-    const query = await admin
-      .firestore()
-      .collection(COLLECTION)
-      .where("vi.code", "==", vi.code)
-      .get();
-    if (!query.empty)
-      return res
-        .status(400)
-        .json({ message: "Property code already exists (vi)." });
 
     const imagesArr = Array.isArray(images) ? images : [];
 
-    // floors là optional, không cần ép kiểu ở đây
-
-    const docRef = await admin.firestore().collection(COLLECTION).add({
+    // Loại bỏ các trường undefined trước khi lưu
+    const dataToSave = {
       vi,
       en,
       ko,
       images: imagesArr,
-      propertyType,
+      propertyType: propertyTypeId,
       businessType,
       status: "active",
-    });
+    };
+    Object.keys(dataToSave).forEach(
+      (key) => dataToSave[key] === undefined && delete dataToSave[key]
+    );
+
+    const docRef = await admin.firestore().collection(COLLECTION).add(dataToSave);
     res.status(201).json({
       message: "Property created.",
       property: {
@@ -247,7 +237,7 @@ router.post("/", async (req, res) => {
           direction: ko.direction || null,
         },
         images: imagesArr,
-        propertyType,
+        propertyType: propertyTypeId,
         businessType: businessType || null,
         status: "active",
       },
